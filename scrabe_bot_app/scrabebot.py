@@ -8,10 +8,10 @@ from std_msgs.msg import Float32, Int32, Bool, String
 
 class RobotMonitorNode(Node):
     def __init__(self):
-        super().__init__('robot_monitor_node')
+        super().__init__('robot_sub_node')
         
         # 1. Konfiguration af API
-        self.api_url = "http://localhost:5000/api/robotdata" # Skift til din C# API URL
+        self.api_url = "http://localhost:5280/api/robotdata" # Skift til din C# API URL
         self.robot_id = 4 # Eller hent dynamisk
         self.hospital = "Herlev Hospital"
         self.afdeling = "Kardiologisk"
@@ -23,7 +23,7 @@ class RobotMonitorNode(Node):
             'bremse_aktiveringer': 0,
             'ladetid': 0,
             'e_stop': False,
-            'loeft': 0
+            'løft': 0
         }
 
         # 3. Opsætning af Subscribers (Abonnenter)
@@ -36,7 +36,7 @@ class RobotMonitorNode(Node):
 
         # 4. Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
         self.timer = self.create_timer(2.0, self.process_and_send_data)
-        self.get_logger().info("Robot Monitor Node er startet op.")
+        self.get_logger().info("Robot Sub Node er startet op.")
 
     # --- Callbacks til at opdatere intern state ---
     def battery_callback(self, msg):
@@ -87,14 +87,14 @@ class RobotMonitorNode(Node):
             "BremseAktiveringer": self.state['bremse_aktiveringer'],
             "Ladetid": self.state['ladetid'],
             "EStop": "Nødstop" if self.state['e_stop'] else "Kører",
-            "Loeft": self.state['loeft'],
+            "Løft": self.state['løft'],
             "Hospital": self.hospital,
             "Afdeling": self.afdeling
         }
 
         # Send data til C# API'en
         try:
-            response = requests.post(self.api_url, json=payload)
+            response = requests.post(self.api_url, json=payload, timeout=1.0)
             if response.status_code != 200:
                 self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
         except requests.exceptions.RequestException as e:

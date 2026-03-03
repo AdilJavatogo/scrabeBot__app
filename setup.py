@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'scrabeBot__app'
+package_name = 'scrabe_bot_app'
 
 setup(
     name=package_name,
@@ -15,7 +15,7 @@ setup(
     zip_safe=True,
     maintainer='adil',
     maintainer_email='adil@todo.todo',
-    description='TODO: Package description',
+    description='API: Send til API',
     license='TODO: License declaration',
     extras_require={
         'test': [
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'scrabe = scrabeBot_app.scrabeBot:main'
+            'scrabe = scrabe_bot_app.scrabebot:main'
         ],
     },
 )
