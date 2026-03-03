@@ -1,0 +1,115 @@
+import rclpy
+from rclpy.node import Node
+import requests
+import json
+
+# Importer de relevante beskedtyper (tilpas disse til dine faktiske ROS2 topics)
+from std_msgs.msg import Float32, Int32, Bool, String
+
+class RobotMonitorNode(Node):
+    def __init__(self):
+        super().__init__('robot_monitor_node')
+        
+        # 1. Konfiguration af API
+        self.api_url = "http://localhost:5000/api/robotdata" # Skift til din C# API URL
+        self.robot_id = 4 # Eller hent dynamisk
+        self.hospital = "Herlev Hospital"
+        self.afdeling = "Kardiologisk"
+
+        # 2. Intern state (gemmer de nyeste værdier)
+        self.state = {
+            'batteri_niveau': 0.0,
+            'cpu_temperatur': 0.0,
+            'bremse_aktiveringer': 0,
+            'ladetid': 0,
+            'e_stop': False,
+            'loeft': 0
+        }
+
+        # 3. Opsætning af Subscribers (Abonnenter)
+        # BEMÆRK: Topic-navne og beskedtyper skal matche din robots faktiske opsætning
+        self.create_subscription(Float32, '/robot/battery', self.battery_callback, 10)
+        self.create_subscription(Float32, '/robot/cpu_temp', self.cpu_temp_callback, 10)
+        self.create_subscription(Int32, '/robot/brake_count', self.brake_callback, 10)
+        self.create_subscription(Bool, '/robot/e_stop', self.estop_callback, 10)
+        # Tilføj flere subscribers for ladetid og løft...
+
+        # 4. Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
+        self.timer = self.create_timer(2.0, self.process_and_send_data)
+        self.get_logger().info("Robot Monitor Node er startet op.")
+
+    # --- Callbacks til at opdatere intern state ---
+    def battery_callback(self, msg):
+        self.state['batteri_niveau'] = msg.data
+
+    def cpu_temp_callback(self, msg):
+        self.state['cpu_temperatur'] = msg.data
+
+    def brake_callback(self, msg):
+        self.state['bremse_aktiveringer'] = msg.data
+
+    def estop_callback(self, msg):
+        self.state['e_stop'] = msg.data
+
+
+    # --- Logik og API afsendelse ---
+    def process_and_send_data(self):
+        # Udregn "Sensor" status
+        sensor_status = "OK"
+        if self.state['cpu_temperatur'] > 60:
+            sensor_status = "Fejl"
+        elif self.state['cpu_temperatur'] > 50:
+            sensor_status = "Advarsel"
+
+        # Udregn "Status" og "Tilstand"
+        robot_status = "Online"
+        tilstand = "Kører"
+        
+        if self.state['e_stop']:
+            tilstand = "Nødstop"
+            sensor_status = "Fejl"
+        elif self.state['batteri_niveau'] < 15 and self.state['ladetid'] > 0:
+            robot_status = "Oplader"
+            tilstand = "Oplader"
+
+        # Dummy logik for opgave (dette kommer måske fra et andet topic som /robot/current_goal?)
+        opgave = "Ingen" 
+
+        # Saml det fulde payload, som det ser ud i din Grafana tabel
+        payload = {
+            "RobotId": self.robot_id,
+            "Status": robot_status,
+            "BatteriNiveau": self.state['batteri_niveau'],
+            "CpuTemperatur": self.state['cpu_temperatur'],
+            "Sensor": sensor_status,
+            "Opgave": opgave,
+            "Tilstand": tilstand,
+            "BremseAktiveringer": self.state['bremse_aktiveringer'],
+            "Ladetid": self.state['ladetid'],
+            "EStop": "Nødstop" if self.state['e_stop'] else "Kører",
+            "Loeft": self.state['loeft'],
+            "Hospital": self.hospital,
+            "Afdeling": self.afdeling
+        }
+
+        # Send data til C# API'en
+        try:
+            response = requests.post(self.api_url, json=payload)
+            if response.status_code != 200:
+                self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            self.get_logger().error(f"Kunne ikke forbinde til C# API: {e}")
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = RobotMonitorNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
