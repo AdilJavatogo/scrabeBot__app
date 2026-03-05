@@ -11,7 +11,7 @@ class RobotMonitorNode(Node):
         super().__init__('robot_sub_node')
         
         # 1. Konfiguration af API
-        self.api_url = "http://172.17.45.131:5280/api/robotdata" # Skift til din C# API URL
+        self.api_url = "http://172.31.32.1:5280/api/robotdata" # Skift til din C# API URL
         self.robot_id = 4 # Eller hent dynamisk
         self.hospital = "Herlev Hospital"
         self.afdeling = "Kardiologisk"
@@ -75,28 +75,33 @@ class RobotMonitorNode(Node):
         # Dummy logik for opgave (dette kommer måske fra et andet topic som /robot/current_goal?)
         opgave = "Ingen" 
 
-        # Saml det fulde payload, som det ser ud i din Grafana tabel
+        # Saml det fulde payload, som det ser ud i din C# Robot.cs Model
         payload = {
             "RobotId": self.robot_id,
-            "Status": robot_status,
-            "BatteryLevel": self.state['batteri_niveau'],
-            "CPUTemperature": self.state['cpu_temperatur'],
-            "Sensor": sensor_status,
+            "RobotStatus": robot_status,           
+            "BatteryLevel": int(self.state['batteri_niveau']),     # Bliver tvunget til int!
+            "CPUTemperature": int(self.state['cpu_temperatur']),   # Bliver tvunget til int!
+            "SensorStatus": sensor_status,         
             "RobotTask": opgave,
             "RobotState": tilstand,
-            "BremseCount": self.state['bremse_aktiveringer'],
+            "BreakCount": self.state['bremse_aktiveringer'],
             "ChargingTime": self.state['ladetid'],
-            "EStop": "Nødstop" if self.state['e_stop'] else "Kører",
+            "EStop": self.state['e_stop'],         
             "Lift": self.state['løft'],
             "Hospital": self.hospital,
-            "Department": self.afdeling
+            "Department": self.afdeling,
+            "Distance": 0  # Tilføjet for at matche C# 100%
         }
 
         # Send data til C# API'en
         try:
-            response = requests.post(self.api_url, json=payload, timeout=1.0)
+            response = requests.post(self.api_url, json=payload, timeout=2.0)
             if response.status_code != 200:
                 self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
+            else:
+                # TILFØJ DENNE LINJE:
+                self.get_logger().info("Data sendt succesfuldt til C# API!")
+
         except requests.exceptions.RequestException as e:
             self.get_logger().error(f"Kunne ikke forbinde til C# API: {e}")
 
