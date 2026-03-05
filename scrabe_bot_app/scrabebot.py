@@ -11,7 +11,7 @@ class RobotMonitorNode(Node):
         super().__init__('robot_sub_node')
         
         # 1. Konfiguration af API
-        self.api_url = "http://localhost:5280/api/robotdata" # Skift til din C# API URL
+        self.api_url = "http://172.17.45.131:5280/api/robotdata" # Skift til din C# API URL
         self.robot_id = 4 # Eller hent dynamisk
         self.hospital = "Herlev Hospital"
         self.afdeling = "Kardiologisk"
@@ -79,17 +79,17 @@ class RobotMonitorNode(Node):
         payload = {
             "RobotId": self.robot_id,
             "Status": robot_status,
-            "BatteriNiveau": self.state['batteri_niveau'],
-            "CpuTemperatur": self.state['cpu_temperatur'],
+            "BatteryLevel": self.state['batteri_niveau'],
+            "CPUTemperature": self.state['cpu_temperatur'],
             "Sensor": sensor_status,
-            "Opgave": opgave,
-            "Tilstand": tilstand,
-            "BremseAktiveringer": self.state['bremse_aktiveringer'],
-            "Ladetid": self.state['ladetid'],
+            "RobotTask": opgave,
+            "RobotState": tilstand,
+            "BremseCount": self.state['bremse_aktiveringer'],
+            "ChargingTime": self.state['ladetid'],
             "EStop": "Nødstop" if self.state['e_stop'] else "Kører",
-            "Løft": self.state['løft'],
+            "Lift": self.state['løft'],
             "Hospital": self.hospital,
-            "Afdeling": self.afdeling
+            "Department": self.afdeling
         }
 
         # Send data til C# API'en
