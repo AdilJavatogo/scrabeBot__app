@@ -130,16 +130,16 @@ class DataSubscriberNode(Node):
                 "Distance": 0 
             }
 
-        # Send data til C# API'en
-        try:
-            response = requests.post(self.api_url, json=payload, timeout=2.0)
-            if response.status_code != 200:
-                self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
-            else:
-                self.get_logger().info("Data sendt succesfuldt til C# API!")
+            # Send data til C# API'en
+            try:
+                response = requests.post(self.api_url, json=payload, timeout=2.0)
+                if response.status_code != 200:
+                    self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
+                else:
+                    self.get_logger().info("Data sendt succesfuldt til C# API!")
 
-        except requests.exceptions.RequestException as e:
-            self.get_logger().error(f"Kunne ikke forbinde til C# API: {e}")
+            except requests.exceptions.RequestException as e:
+                self.get_logger().error(f"Kunne ikke forbinde til C# API: {e}")
 
 def main(args=None):
     rclpy.init(args=args)

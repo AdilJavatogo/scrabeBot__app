@@ -8,11 +8,11 @@ class DataPublisherNode(Node):
         super().__init__('data_publisher_node')
         
         # Opret publishers for de relevante topics
-        self.distance_pub = self.create_publisher(Float32, '/robot/distance', 10)     # mangler
-        self.sensor_status_pub = self.create_publisher(String, '/robot/sensor_status', 10) # mangler
-        self.robot_state_pub = self.create_publisher(String, '/robot/state', 10) # mangler
-        self.robot_task_pub = self.create_publisher(String, '/robot/task', 10) # mangler
-        self.robot_status_pub = self.create_publisher(String, '/robot/status', 10) # mangler
+        self.distance_pub = self.create_publisher(Int32, '/robot/distance', 10)
+        self.sensor_status_pub = self.create_publisher(String, '/robot/sensor_status', 10)
+        self.robot_state_pub = self.create_publisher(String, '/robot/state', 10)
+        self.robot_task_pub = self.create_publisher(String, '/robot/task', 10)
+        self.robot_status_pub = self.create_publisher(String, '/robot/status', 10)
         self.battery_pub = self.create_publisher(Float32, '/robot/battery', 10)
         self.cpu_temp_pub = self.create_publisher(Float32, '/robot/cpu_temp', 10)
         self.brake_pub = self.create_publisher(Int32, '/robot/brake_count', 10)
