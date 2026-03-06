@@ -12,9 +12,8 @@ class DataPublisherNode(Node):
         self.cpu_temp_pub = self.create_publisher(Float32, '/robot/cpu_temp', 10)
         self.brake_pub = self.create_publisher(Int32, '/robot/brake_count', 10)
         self.estop_pub = self.create_publisher(Bool, '/robot/e_stop', 10)
-
-        # self.lift_pub = self.create_publisher(Int32, '/robot/lift', 10)
-        # self.charge_time_pub = self.create_publisher(Int32, '/robot/charging_time', 10)
+        self.lift_pub = self.create_publisher(Int32, '/robot/lift', 10)
+        self.charge_time_pub = self.create_publisher(Int32, '/robot/charging_time', 10)
         
         # Publish data hvert 5. sekund
         self.timer = self.create_timer(5.0, self.publish_data)

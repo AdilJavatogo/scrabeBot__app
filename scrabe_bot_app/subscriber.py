@@ -32,7 +32,8 @@ class DataSubscriberNode(Node):
         self.create_subscription(Float32, '/robot/cpu_temp', self.cpu_temp_callback, 10)
         self.create_subscription(Int32, '/robot/brake_count', self.brake_callback, 10)
         self.create_subscription(Bool, '/robot/e_stop', self.estop_callback, 10)
-        # Tilføj flere subscribers for ladetid og løft...
+        self.create_subscription(Int32, '/robot/charging_time', self.charging_time_callback, 10)
+        self.create_subscription(Int32, '/robot/lift', self.lift_callback, 10)        
 
         # 4. Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
         self.timer = self.create_timer(2.0, self.process_and_send_data)
