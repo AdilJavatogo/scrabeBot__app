@@ -3,7 +3,7 @@ import rclpy
 from rclpy.node import Node
 import requests
 
-from std_msgs.msg import Float32, Int32, Bool
+from std_msgs.msg import Float32, Int32, Bool, String
 
 class DataSubscriberNode(Node):
     def __init__(self):
@@ -16,7 +16,7 @@ class DataSubscriberNode(Node):
         #self.afdeling = "Kardiologisk"
 
         # retry variabel
-        self.next_api_attempt_time = 0.0
+        self.next_api_attempt_time = 0.0 # muligvis slet, da det virker allerede
 
         # Intern state, gemmer de nyeste værdier
         self.state = {
@@ -29,6 +29,11 @@ class DataSubscriberNode(Node):
         }
 
         # Opret subscriptions til de relevante topics
+        self.create_subscription(Float32, '/robot/distance', self.distance_callback, 10)
+        self.create_subscription(String, '/robot/sensor_status', self.sensor_status_callback, 10)
+        self.create_subscription(String, '/robot/state', self.robot_state_callback, 10)
+        self.create_subscription(String, '/robot/task', self.robot_task_callback, 10)
+        self.create_subscription(String, '/robot/status', self.robot_status_callback, 10)
         self.create_subscription(Float32, '/robot/battery', self.battery_callback, 10)
         self.create_subscription(Float32, '/robot/cpu_temp', self.cpu_temp_callback, 10)
         self.create_subscription(Int32, '/robot/brake_count', self.brake_callback, 10)
@@ -41,6 +46,22 @@ class DataSubscriberNode(Node):
         self.get_logger().info("Robot Sub Node er startet op.")
 
     # --- Callbacks til at opdatere intern state ---
+
+    def distance_callback(self, msg):
+        self.state['distance'] = msg.data
+
+    def sensor_status_callback(self, msg):
+        self.state['sensor_status'] = msg.data
+
+    def robot_state_callback(self, msg):
+        self.state['robot_state'] = msg.data
+
+    def robot_task_callback(self, msg):
+        self.state['robot_task'] = msg.data
+
+    def robot_status_callback(self, msg):
+        self.state['robot_status'] = msg.data
+
     def battery_callback(self, msg):
         self.state['batteri_niveau'] = msg.data
 

@@ -8,6 +8,11 @@ class DataPublisherNode(Node):
         super().__init__('data_publisher_node')
         
         # Opret publishers for de relevante topics
+        self.distance_pub = self.create_publisher(Float32, '/robot/distance', 10)     # mangler
+        self.sensor_status_pub = self.create_publisher(String, '/robot/sensor_status', 10) # mangler
+        self.robot_state_pub = self.create_publisher(String, '/robot/state', 10) # mangler
+        self.robot_task_pub = self.create_publisher(String, '/robot/task', 10) # mangler
+        self.robot_status_pub = self.create_publisher(String, '/robot/status', 10) # mangler
         self.battery_pub = self.create_publisher(Float32, '/robot/battery', 10)
         self.cpu_temp_pub = self.create_publisher(Float32, '/robot/cpu_temp', 10)
         self.brake_pub = self.create_publisher(Int32, '/robot/brake_count', 10)
@@ -23,6 +28,22 @@ class DataPublisherNode(Node):
 
     # Logik til at generere og publicere data
     def publish_data(self):
+
+        status_msg = String()
+        status_msg.data = random.choice(["OK", "Advarsel", "Fejl"])
+        self.robot_status_pub.publish(status_msg)
+
+        state_msg = String()
+        state_msg.data = random.choice(["Ledig", "Kører", "Oplader"])
+        self.robot_state_pub.publish(state_msg)
+
+        task_msg = String()
+        task_msg.data = random.choice(["Ingen opgave", "Transporterer", "Lader"])
+        self.robot_task_pub.publish(task_msg)
+
+        distance_msg = Int32()
+        distance_msg.data = random.randint(0, 1000)
+        self.distance_pub.publish(distance_msg)
 
         bat_msg = Float32()
         bat_msg.data = random.uniform(20.0, 100.0)
