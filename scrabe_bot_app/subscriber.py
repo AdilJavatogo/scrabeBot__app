@@ -52,6 +52,12 @@ class DataSubscriberNode(Node):
     def estop_callback(self, msg):
         self.state['e_stop'] = msg.data
 
+    def charging_time_callback(self, msg):
+        self.state['ladetid'] = msg.data
+    
+    def lift_callback(self, msg):
+        self.state['løft'] = msg.data
+
 
     # --- Logik og API afsendelse ---
     def process_and_send_data(self):

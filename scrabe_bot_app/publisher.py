@@ -47,6 +47,16 @@ class DataPublisherNode(Node):
         estop_msg.data = False
         self.estop_pub.publish(estop_msg)
 
+        # --- Løft (Int32) ---
+        lift_msg = Int32()
+        lift_msg.data = random.randint(0, 1) # Simulerer løft for sandt eller falsk (0 eller 1)
+        self.lift_pub.publish(lift_msg)
+
+        # --- Ladetid (Int32) ---
+        charge_time_msg = Int32()
+        charge_time_msg.data = random.randint(0, 120) # Simulerer ladetid mellem 0 og 120 minutter
+        self.charge_time_pub.publish(charge_time_msg)
+
 def main(args=None):
     rclpy.init(args=args)
     node = DataPublisherNode()
