@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'scrabe_sub = scrabe_bot_app.subscriber:main'
+            'scrabe_sub = scrabe_bot_app.subscriber:main',
             'scrabe_pub = scrabe_bot_app.publisher:main'
         ],
     },

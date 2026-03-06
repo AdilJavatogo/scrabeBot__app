@@ -1,22 +1,24 @@
+import time
 import rclpy
 from rclpy.node import Node
 import requests
-import json
 
-# Importer de relevante beskedtyper (tilpas disse til dine faktiske ROS2 topics)
-from std_msgs.msg import Float32, Int32, Bool, String
+from std_msgs.msg import Float32, Int32, Bool
 
 class DataSubscriberNode(Node):
     def __init__(self):
         super().__init__('robot_sub_node')
         
         # 1. Konfiguration af API
-        self.api_url = "http://172.31.32.1:5280/api/robotdata" # Skift til din C# API URL
-        self.robot_id = 4 # Eller hent dynamisk
-        self.hospital = "Herlev Hospital"
-        self.afdeling = "Kardiologisk"
+        self.api_url = "http://172.31.32.1:5280/api/robotdata"
+        #self.robot_id = 4 # Eller hent dynamisk
+        #self.hospital = "Herlev Hospital"
+        #self.afdeling = "Kardiologisk"
 
-        # 2. Intern state (gemmer de nyeste værdier)
+        # retry variabel
+        self.next_api_attempt_time = 0.0
+
+        # Intern state, gemmer de nyeste værdier
         self.state = {
             'batteri_niveau': 0.0,
             'cpu_temperatur': 0.0,
@@ -26,8 +28,7 @@ class DataSubscriberNode(Node):
             'løft': 0
         }
 
-        # 3. Opsætning af Subscribers (Abonnenter)
-        # BEMÆRK: Topic-navne og beskedtyper skal matche din robots faktiske opsætning
+        # Opret subscriptions til de relevante topics
         self.create_subscription(Float32, '/robot/battery', self.battery_callback, 10)
         self.create_subscription(Float32, '/robot/cpu_temp', self.cpu_temp_callback, 10)
         self.create_subscription(Int32, '/robot/brake_count', self.brake_callback, 10)
@@ -58,9 +59,16 @@ class DataSubscriberNode(Node):
     def lift_callback(self, msg):
         self.state['løft'] = msg.data
 
-
-    # --- Logik og API afsendelse ---
     def process_and_send_data(self):
+
+        test_robotter = [
+            {"id": 4, "hospital": "Herlev Hospital", "afdeling": "Kardiologisk"},
+            {"id": 5, "hospital": "Herlev Hospital", "afdeling": "Onkologisk"},
+            {"id": 6, "hospital": "Rigshospitalet", "afdeling": "Kardiologisk"},
+            {"id": 7, "hospital": "OUH", "afdeling": "Pædiatrisk"},
+            {"id": 8, "hospital": "OUH", "afdeling": "Kardiologisk"}
+        ]
+
         # Udregn "Sensor" status
         sensor_status = "OK"
         if self.state['cpu_temperatur'] > 60:
@@ -82,23 +90,24 @@ class DataSubscriberNode(Node):
         # Dummy logik for opgave (dette kommer måske fra et andet topic som /robot/current_goal?)
         opgave = "Ingen" 
 
-        # Saml det fulde payload, som det ser ud i din C# Robot.cs Model
-        payload = {
-            "RobotId": self.robot_id,
-            "RobotStatus": robot_status,           
-            "BatteryLevel": int(self.state['batteri_niveau']),      # den er int i C# modellen, så vi konverterer den til int her
-            "CPUTemperature": int(self.state['cpu_temperatur']), 
-            "SensorStatus": sensor_status,         
-            "RobotTask": opgave,
-            "RobotState": tilstand,
-            "BreakCount": self.state['bremse_aktiveringer'],
-            "ChargingTime": self.state['ladetid'],
-            "EStop": self.state['e_stop'],         
-            "Lift": self.state['løft'],
-            "Hospital": self.hospital,
-            "Department": self.afdeling,
-            "Distance": 0 
-        }
+        for robot in test_robotter:
+
+            payload = {
+                "RobotId": robot["id"],
+                "RobotStatus": robot_status,           
+                "BatteryLevel": int(self.state['batteri_niveau']),  
+                "CPUTemperature": int(self.state['cpu_temperatur']), 
+                "SensorStatus": sensor_status,         
+                "RobotTask": opgave,
+                "RobotState": tilstand,
+                "BreakCount": self.state['bremse_aktiveringer'],
+                "ChargingTime": self.state['ladetid'],
+                "EStop": self.state['e_stop'],         
+                "Lift": self.state['løft'],
+                "Hospital": robot["hospital"],
+                "Department": robot["afdeling"],
+                "Distance": 0 
+            }
 
         # Send data til C# API'en
         try:
@@ -106,7 +115,6 @@ class DataSubscriberNode(Node):
             if response.status_code != 200:
                 self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
             else:
-                # TILFØJ DENNE LINJE:
                 self.get_logger().info("Data sendt succesfuldt til C# API!")
 
         except requests.exceptions.RequestException as e:
