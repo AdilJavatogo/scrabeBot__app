@@ -6,7 +6,7 @@ import json
 # Importer de relevante beskedtyper (tilpas disse til dine faktiske ROS2 topics)
 from std_msgs.msg import Float32, Int32, Bool, String
 
-class RobotMonitorNode(Node):
+class DataSubscriberNode(Node):
     def __init__(self):
         super().__init__('robot_sub_node')
         
@@ -79,8 +79,8 @@ class RobotMonitorNode(Node):
         payload = {
             "RobotId": self.robot_id,
             "RobotStatus": robot_status,           
-            "BatteryLevel": int(self.state['batteri_niveau']),     # Bliver tvunget til int!
-            "CPUTemperature": int(self.state['cpu_temperatur']),   # Bliver tvunget til int!
+            "BatteryLevel": int(self.state['batteri_niveau']),      # den er int i C# modellen, så vi konverterer den til int her
+            "CPUTemperature": int(self.state['cpu_temperatur']), 
             "SensorStatus": sensor_status,         
             "RobotTask": opgave,
             "RobotState": tilstand,
@@ -90,7 +90,7 @@ class RobotMonitorNode(Node):
             "Lift": self.state['løft'],
             "Hospital": self.hospital,
             "Department": self.afdeling,
-            "Distance": 0  # Tilføjet for at matche C# 100%
+            "Distance": 0 
         }
 
         # Send data til C# API'en
@@ -107,7 +107,7 @@ class RobotMonitorNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = RobotMonitorNode()
+    node = DataSubscriberNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
