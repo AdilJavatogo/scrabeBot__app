@@ -100,6 +100,11 @@ class DataSubscriberNode(Node):
 
     def process_and_send_data(self):
 
+        if self.request_count >= self.max_requests:
+            self.get_logger().info(f"Grænsen på {self.max_requests} requests er nået. Stopper dataafsendelse.")
+            self.timer.cancel()
+            return
+
         # Send kun, hvis vi har modtaget data fra ROS-topics mindst én gang
         if not self.has_received_data:
             return
@@ -135,6 +140,9 @@ class DataSubscriberNode(Node):
 
         for robot in test_robotter:
 
+            if self.request_count >= self.max_requests:
+                break
+
             payload = {
                 "RobotId": robot["id"],
                 "RobotStatus": robot_status,           
@@ -156,7 +164,9 @@ class DataSubscriberNode(Node):
             try:
                 response = requests.post(self.api_url, json=payload, timeout=2.0)
                 if response.status_code != 200:
-                    self.get_logger().warning(f"Fejl ved afsendelse til API: {response.status_code}")
+
+                    self.request_count += 1
+                    self.get_logger().info(f"Data sendt succesfuldt! ({self.request_count}/{self.max_requests})")
                 else:
                     self.get_logger().info("Data sendt succesfuldt til C# API!")
 
