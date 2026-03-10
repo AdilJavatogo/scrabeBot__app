@@ -1,13 +1,10 @@
-# Brug det officielle ROS 2 Humble image
 FROM ros:humble-ros-base
 
-# Sæt arbejdsmappe
 WORKDIR /app
 
 # Kopier din source code ind i containeren
 COPY . /app/src/scrabe_bot_app
 
-# Installer pip og requests biblioteket (som din subscriber bruger)
 RUN apt-get update && apt-get install -y python3-pip
 RUN pip3 install requests
 
