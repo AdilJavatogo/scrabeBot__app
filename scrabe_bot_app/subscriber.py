@@ -15,6 +15,8 @@ class DataSubscriberNode(Node):
         #self.hospital = "Herlev Hospital"
         #self.afdeling = "Kardiologisk"
 
+        self.has_received_data = False
+
         # retry variabel
         self.next_api_attempt_time = 0.0 # muligvis slet, da det virker allerede
 
@@ -49,38 +51,53 @@ class DataSubscriberNode(Node):
 
     def distance_callback(self, msg):
         self.state['distance'] = msg.data
+        self.has_received_data = True
 
     def sensor_status_callback(self, msg):
         self.state['sensor_status'] = msg.data
+        self.has_received_data = True
 
     def robot_state_callback(self, msg):
         self.state['robot_state'] = msg.data
+        self.has_received_data = True
 
     def robot_task_callback(self, msg):
         self.state['robot_task'] = msg.data
+        self.has_received_data = True
 
     def robot_status_callback(self, msg):
         self.state['robot_status'] = msg.data
+        self.has_received_data = True
 
     def battery_callback(self, msg):
         self.state['batteri_niveau'] = msg.data
+        self.has_received_data = True
 
     def cpu_temp_callback(self, msg):
         self.state['cpu_temperatur'] = msg.data
+        self.has_received_data = True
 
     def brake_callback(self, msg):
         self.state['bremse_aktiveringer'] = msg.data
+        self.has_received_data = True
 
     def estop_callback(self, msg):
         self.state['e_stop'] = msg.data
+        self.has_received_data = True
 
     def charging_time_callback(self, msg):
         self.state['ladetid'] = msg.data
+        self.has_received_data = True
     
     def lift_callback(self, msg):
         self.state['løft'] = msg.data
+        self.has_received_data = True
 
     def process_and_send_data(self):
+
+        # Send kun, hvis vi har modtaget data fra ROS-topics mindst én gang
+        if not self.has_received_data:
+            return
 
         test_robotter = [
             {"id": 4, "hospital": "Herlev Hospital", "afdeling": "Kardiologisk"},
