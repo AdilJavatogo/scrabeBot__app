@@ -12,4 +12,4 @@ RUN pip3 install requests
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && colcon build"
 
 # Kør subscriberen når containeren starter
-CMD ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash && source install/setup.bash && ros2 run scrabe_bot_app scrabe_sub"]
+CMD ["/bin/bash", "-c", "source install/setup.bash && ros2 run scrabe_bot_app scrabe_sub"]
