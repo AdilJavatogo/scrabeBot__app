@@ -22,6 +22,9 @@ class DataSubscriberNode(Node):
 
         self.has_received_data = False
 
+        self.request_count = 0
+        self.max_requests = 300
+
         # retry variabel
         self.next_api_attempt_time = 0.0 # muligvis slet, da det virker allerede
 
