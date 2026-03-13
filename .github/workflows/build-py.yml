@@ -39,6 +39,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.UPDATE_PUB_SUB_TOKEN }}
-          repository: adiljavatogo/robomonitor
+          repository: adiljavatogo/robomonitor # ændre adiljavatogo til env
           event-type: pub/sub_image_updated
           client-payload: '{"image_tag": "latest"}'
