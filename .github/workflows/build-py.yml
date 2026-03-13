@@ -3,9 +3,6 @@ name: Build and Push Python Application
 on:
   push:
     branches: [ "main" ]
-  repository_dispatch:
-    types: [pub/sub_image_updated]
-    
   workflow_dispatch:
 
 env:
