@@ -34,7 +34,6 @@ jobs:
           file: Dockerfile 
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          #provenance: false
 
       - name: Pub/Sub node er opdateret
         uses: peter-evans/repository-dispatch@v3
