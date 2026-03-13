@@ -34,4 +34,12 @@ jobs:
           file: Dockerfile 
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          provenance: false
+          #provenance: false
+
+      - name: Pub/Sub node er opdateret
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          repository: adiljavatogo/robomonitor
+          event-type: pub/sub_image_updated
+          client-payload: '{"image_tag": "latest"}'
