@@ -42,7 +42,7 @@ jobs:
       - name: Pub/Sub node er opdateret
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.UPDATE_PUB_SUB_TOKEN }}
           repository: adiljavatogo/robomonitor
           event-type: pub/sub_image_updated
           client-payload: '{"image_tag": "latest"}'
