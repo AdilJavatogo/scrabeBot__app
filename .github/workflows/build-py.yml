@@ -2,7 +2,7 @@ name: Build and Push Python Application
 
 on:
   push:
-    branches: [ "main" ] # husk også pull request
+    branches: [ "master" ] # husk også pull request
   workflow_dispatch:
 
 env:
