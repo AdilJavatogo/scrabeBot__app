@@ -51,7 +51,7 @@ class DataSubscriberNode(Node):
         self.create_subscription(Int32, '/robot/charging_time', self.charging_time_callback, 10)
         self.create_subscription(Int32, '/robot/lift', self.lift_callback, 10)        
 
-        # 4. Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
+        # Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
         self.timer = self.create_timer(2.0, self.process_and_send_data)
         self.get_logger().info("Robot Sub Node er startet op.")
 
