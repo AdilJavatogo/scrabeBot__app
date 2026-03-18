@@ -16,7 +16,7 @@ class DataSubscriberNode(Node):
         #self.hospital = "Herlev Hospital"
         #self.afdeling = "Kardiologisk"
         
-        # 1. Konfiguration af API (Læser fra miljøvariabel, falder tilbage til host.docker.internal)
+        # Konfiguration af API (Læser fra miljøvariabel, falder tilbage til host.docker.internal)
         api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280")
         self.api_url = f"{api_base_url}/api/robotdata"
 
