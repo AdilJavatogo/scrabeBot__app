@@ -16,9 +16,12 @@ class DataSubscriberNode(Node):
         #self.hospital = "Herlev Hospital"
         #self.afdeling = "Kardiologisk"
         
-        # Konfiguration af API (Læser fra miljøvariabel, falder tilbage til host.docker.internal)
-        api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280")
+        # Konfiguration af API, læser fra docker-compose miljøvariabler, med fallback til localhost
+        api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280") # skal nok laves om det tailscale ip senere
         self.api_url = f"{api_base_url}/api/robotdata"
+        
+        # API-nøgle, læser fra docker compose miljøvariabel, med fallback til en dummy værdi
+        self.api_key = os.environ.get("ROBOT_API_KEY", "MANGLER_NØGLE")
 
         self.has_received_data = False
 
@@ -163,15 +166,24 @@ class DataSubscriberNode(Node):
                 "Distance": 0 
             }
 
+            headers = {
+                "X-API-KEY": self.api_key,
+                "Content-Type": "application/json"
+            }
+
             # Send data til C# API'en
             try:
-                response = requests.post(self.api_url, json=payload, timeout=2.0)
-                if response.status_code != 200:
-
+                response = requests.post(self.api_url, json=payload, headers=headers, timeout=2.0)
+                
+                if response.status_code == 200:
                     self.request_count += 1
                     self.get_logger().info(f"Data sendt succesfuldt! ({self.request_count}/{self.max_requests})")
+                elif response.status_code == 403:
+                    self.get_logger().error("Afvist: Ugyldig API nøgle (403 Forbidden)")
+                elif response.status_code == 401:
+                    self.get_logger().error("Afvist: Mangler API nøgle (401 Unauthorized)")
                 else:
-                    self.get_logger().info("Data sendt succesfuldt til C# API!")
+                    self.get_logger().warning(f"Fejl fra C# API. Status kode: {response.status_code}")
 
             except requests.exceptions.RequestException as e:
                 self.get_logger().error(f"Kunne ikke forbinde til C# API: {e}")
