@@ -19,9 +19,6 @@ class DataSubscriberNode(Node):
         # Konfiguration af API, læser fra docker-compose miljøvariabler, med fallback til localhost
         api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280") # skal nok laves om det tailscale ip senere
         self.api_url = f"{api_base_url}/api/robotdata"
-        
-        # API-nøgle, læser fra docker compose miljøvariabel, med fallback til en dummy værdi
-        self.api_key = os.environ.get("ROBOT_API_KEY", "MANGLER_NØGLE")
 
         self.has_received_data = False
 
@@ -114,13 +111,16 @@ class DataSubscriberNode(Node):
         # Send kun, hvis vi har modtaget data fra ROS-topics mindst én gang
         if not self.has_received_data:
             return
+        
+        # API-nøgle, læser fra docker compose miljøvariabel, med fallback til en dummy værdi
+        # self.api_key = os.environ.get("ROBOT_API_KEY", "MANGLER_NØGLE")
 
         test_robotter = [
-            {"id": 4, "hospital": "Herlev Hospital", "afdeling": "Kardiologisk"},
-            {"id": 5, "hospital": "Herlev Hospital", "afdeling": "Onkologisk"},
+            {"id": 4, "hospital": "Herlev Hospital", "afdeling": "Kardiologisk", "api_key": "herlev_ghi789"},
+            {"id": 5, "hospital": "Herlev Hospital", "afdeling": "Onkologisk", "api_key": "herlev_xyz123"},
             {"id": 6, "hospital": "Rigshospitalet", "afdeling": "Kardiologisk"},
             {"id": 7, "hospital": "OUH", "afdeling": "Pædiatrisk"},
-            {"id": 8, "hospital": "OUH", "afdeling": "Kardiologisk"}
+            {"id": 8, "hospital": "OUH", "afdeling": "Kardiologisk", "api_key": "ouh_abc456"}
         ]
 
         # Udregn "Sensor" status
