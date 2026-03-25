@@ -167,7 +167,7 @@ class DataSubscriberNode(Node):
             }
 
             headers = {
-                "X-API-KEY": self.api_key,
+                "X-API-KEY": robot.get("api_key", "MANGLER_NØGLE"),
                 "Content-Type": "application/json"
             }
 
