@@ -13,8 +13,8 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='adil',
-    maintainer_email='adil@todo.todo',
+    maintainer='yesman',
+    maintainer_email='yesman@todo.todo',
     description='API: Send til API',
     license='TODO: License declaration',
     extras_require={

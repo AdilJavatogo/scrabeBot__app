@@ -26,7 +26,6 @@ class DataPublisherNode(Node):
 
         self.get_logger().info("Publisher Node er startet op.")
 
-    # Logik til at generere og publicere data
     def publish_data(self):
 
         status_msg = String()

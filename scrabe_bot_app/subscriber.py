@@ -9,26 +9,15 @@ from std_msgs.msg import Float32, Int32, Bool, String
 class DataSubscriberNode(Node):
     def __init__(self):
         super().__init__('robot_sub_node')
-        
-        # 1. Konfiguration af API
-                                                    #self.api_url = "http://172.31.32.1:5280/api/robotdata"
-        #self.robot_id = 4 # Eller hent dynamisk
-        #self.hospital = "Herlev Hospital"
-        #self.afdeling = "Kardiologisk"
-        
-        # Konfiguration af API, læser fra docker-compose miljøvariabler, med fallback til localhost
-        api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280") # skal nok laves om det tailscale ip senere
-        self.api_url = f"{api_base_url}/api/robotdata"
+        api_base_url = os.environ.get("ROBOMONITOR_API_URL", "http://host.docker.internal:5280")
 
         self.has_received_data = False
 
         self.request_count = 0
         self.max_requests = 300
 
-        # retry variabel
-        self.next_api_attempt_time = 0.0 # muligvis slet, da det virker allerede
+        self.next_api_attempt_time = 0.0
 
-        # Intern state, gemmer de nyeste værdier
         self.state = {
             'batteri_niveau': 0.0,
             'cpu_temperatur': 0.0,
@@ -37,8 +26,6 @@ class DataSubscriberNode(Node):
             'e_stop': False,
             'løft': 0
         }
-
-        # Opret subscriptions til de relevante topics
         self.create_subscription(Float32, '/robot/distance', self.distance_callback, 10)
         self.create_subscription(String, '/robot/sensor_status', self.sensor_status_callback, 10)
         self.create_subscription(String, '/robot/state', self.robot_state_callback, 10)
@@ -51,11 +38,8 @@ class DataSubscriberNode(Node):
         self.create_subscription(Int32, '/robot/charging_time', self.charging_time_callback, 10)
         self.create_subscription(Int32, '/robot/lift', self.lift_callback, 10)        
 
-        # Timer til at udregne tilstand og sende data (f.eks. hvert 2. sekund)
         self.timer = self.create_timer(2.0, self.process_and_send_data)
         self.get_logger().info("Robot Sub Node er startet op.")
-
-    # --- Callbacks til at opdatere intern state ---
 
     def distance_callback(self, msg):
         self.state['distance'] = msg.data
@@ -107,14 +91,10 @@ class DataSubscriberNode(Node):
             self.get_logger().info(f"Grænsen på {self.max_requests} requests er nået. Stopper dataafsendelse.")
             self.timer.cancel()
             return
-
-        # Send kun, hvis vi har modtaget data fra ROS-topics mindst én gang
+        
         if not self.has_received_data:
             return
         
-        # API-nøgle, læser fra docker compose miljøvariabel, med fallback til en dummy værdi
-        # self.api_key = os.environ.get("ROBOT_API_KEY", "MANGLER_NØGLE")
-
         test_robotter = [
             {"id": 4, "hospital": "Herlev Hospital", "afdeling": "Kardiologisk", "api_key": "herlev_ghi789"},
             {"id": 5, "hospital": "Herlev Hospital", "afdeling": "Onkologisk", "api_key": "herlev_xyz123"},
@@ -123,14 +103,12 @@ class DataSubscriberNode(Node):
             {"id": 8, "hospital": "OUH", "afdeling": "Kardiologisk", "api_key": "ouh_abc456"}
         ]
 
-        # Udregn "Sensor" status
         sensor_status = "OK"
         if self.state['cpu_temperatur'] > 60:
             sensor_status = "Fejl"
         elif self.state['cpu_temperatur'] > 50:
             sensor_status = "Advarsel"
 
-        # Udregn "Status" og "Tilstand"
         robot_status = "Online"
         tilstand = "Kører"
         
@@ -141,7 +119,6 @@ class DataSubscriberNode(Node):
             robot_status = "Oplader"
             tilstand = "Oplader"
 
-        # Dummy logik for opgave (dette kommer måske fra et andet topic som /robot/current_goal?)
         opgave = "Ingen" 
 
         for robot in test_robotter:
@@ -171,7 +148,6 @@ class DataSubscriberNode(Node):
                 "Content-Type": "application/json"
             }
 
-            # Send data til C# API'en
             try:
                 response = requests.post(self.api_url, json=payload, headers=headers, timeout=2.0)
                 
